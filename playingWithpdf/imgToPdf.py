@@ -9,25 +9,22 @@ from os import listdir
 from os.path import isfile, join
 
 # storing image path
-imgs = [f for f in listdir("C:/Users/mkaro/Desktop/python/imgsToPdf/FilesToMerge") if isfile(join("C:/Users/mkaro/Desktop/python/imgsToPdf/FilesToMerge", f))]
-img_path = "C:/Users/mkaro/Desktop/python/imgsToPdf/FilesToMerge/"
+imgs = [f for f in listdir("c:/Users/mkaro/Desktop/python/playingWithpdf/FilesToMerge") if isfile(join("c:/Users/mkaro/Desktop/python/playingWithpdf/FilesToMerge", f))]
+img_path = "c:/Users/mkaro/Desktop/python/playingWithpdf/FilesToMerge/"
 
 # storing pdf path
-pdf_path = "C:/Users/mkaro/Desktop/python/imgsToPdf/claim.pdf"
+pdf_path = "c:/Users/mkaro/Desktop/python/playingWithpdf/pdfs/claim.pdf"
 # opening or creating pdf file
-# file = open(pdf_path, "ab")
 
 imgList = []
 
-for imgName in imgs:
-    print(img_path+imgName)
-    # opening image
-    image = Image.open(img_path+imgName)
-    imageRGB = image.convert("RGB")
-    imgList.insert(imageRGB)
+for i, imgName in enumerate(imgs): 
+    print(f"{i}: {img_path + imgName}") 
+    # appending image path 
+    imgList.append(img_path + imgName)
 
-# closing pdf file
-# file.close()
-im_1.save(r'C:\Users\Ron\Desktop\Test\my_images.pdf', save_all=True, append_images=image_list)
+# Now you can use img2pdf to convert the list of image paths to a PDF 
+
+with open(pdf_path, "wb") as f: f.write(img2pdf.convert(imgList))
 # output
 print("Successfully made pdf file")
