@@ -55,7 +55,7 @@ def generate_rent_receipts(year, output_dir="rent_receipts"):
         content = (
             f"Received sum of <b>Rs. {config['rent_amount']}/-</b> from <b>{config['your_name']}</b> "
             f"towards the rent of property located at <b>{config['property_address']}</b> "
-            f"for the period <b>{month}, {year}</b>."
+            f"for the period of <b>{month}, {year}</b>."
         )
 
         # Word wrapping and adding content as a Paragraph
@@ -70,7 +70,8 @@ def generate_rent_receipts(year, output_dir="rent_receipts"):
         frame.addFromList([paragraph], c)
 
         # Add Owner's details
-        c.drawString(padding + 5, y_offset + 5 * cm, config["owner_name"])
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(padding + 5, y_offset + 5 * cm, f"{config['owner_name']}")
         c.drawString(padding + 5, y_offset + 4.5 * cm, f"PAN: {config['owner_pan']}")
 
     # Save the PDF
