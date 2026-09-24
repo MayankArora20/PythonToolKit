@@ -8,8 +8,21 @@ def writeErrorsToFile(location, errorMessage):
     with open(location + "ytMp3ErrorLog.txt", "a") as f:
         f.write(errorMessage + "\n")
 
+# Sometimes playlist title contains invalid characters, that we should handle
+def sanitize_filename(name):
+    return re.sub(r'[<>:"/\\|?*]', '_', name).strip().strip('.')
+
 playlists = [
-    "https://www.youtube.com/playlist?list=PLxPkKPLAAOxnqCGRrFP0k0NNRr3QvuRgm"
+    # "https://www.youtube.com/playlist?list=PLxPkKPLAAOxnqCGRrFP0k0NNRr3QvuRgm",
+    # "https://www.youtube.com/playlist?list=PLxPkKPLAAOxkk2rPqHkKIyQaMhGRYefMv",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dmZwj53QMUBv0jyDzhzZSFU",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dnONIdMCi60rCpPOlRDjDBW",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dmOznjoG3yeqmHiF9Ne6osR",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dlv1iIHy_y7nch7xIDgsXFK",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dm9qo_bmxrQjf8AKIO5N_bp",
+    # "https://www.youtube.com/playlist?list=PLQ8Q-8-X18dlOLRQQiqDSMJpgZ586to1o"
+    # "https://www.youtube.com/playlist?list=PLxPkKPLAAOxln5v_Y91GIhD0GOJJeUVEq",
+    "https://youtube.com/playlist?list=PLxPkKPLAAOxln5v_Y91GIhD0GOJJeUVEq&si=q_hpijCrQPmWfhlQ"
 ]
 
 errorLog = ["Errors:"]
@@ -17,25 +30,64 @@ errorLog = ["Errors:"]
 for list in playlists:
     print("\nytLink: " + list)
 
-    # yt-dlp does not have a direct Playlist object, so we'll get the URLs manually
-    ydl_opts = {
-        'quiet': True,
-        'extract_flat': True,
-        'skip_download': True
-    }
+    dirLocation = "C:/Users/mkaro/Desktop/python/Youtube/PlaylistMp3Download/"
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        playlist_info = ydl.extract_info(list, download=False)
-        playlist_title = playlist_info.get('title', 'Untitled Playlist')
-        video_urls = [entry['url'] for entry in playlist_info['entries']]
+    try:
+        # yt-dlp does not have a direct Playlist object, so we'll get the URLs manually
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': True,
+            'skip_download': True,
+            'ignoreerrors': True,
+            'noplaylist': False,
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            playlist_info = ydl.extract_info(list, download=False)
+
+        if not playlist_info:
+            print("No playlist info was returned; skipping this playlist.")
+            continue
+
+        playlist_title_raw = playlist_info.get('title', 'Untitled Playlist')
+        playlist_title = sanitize_filename(playlist_title_raw)
+        entries = playlist_info.get('entries') or []
+        video_urls = []
+
+        for entry in entries:
+            if not entry:
+                continue
+            if isinstance(entry, dict):
+                if entry.get('url'):
+                    video_urls.append(entry['url'])
+            elif isinstance(entry, str):
+                video_urls.append(entry)
+
+    except Exception as e:
+        writeErrorsToFile(dirLocation, f"Playlist error: {list} :: {type(e).__name__}: {e}")
+        continue
 
     print("Playlist Name: " + playlist_title)
-    dirLocation = "C:/Users/mkaro/Desktop/python/Youtube/PlaylistMp3Download/"
     folder = os.path.join(dirLocation, playlist_title)
     os.makedirs(folder, exist_ok=True)
     print("Storage location: " + folder)
 
     for url in video_urls:
+        video_title = "Unknown Title"
+
+        try:
+            info_opts = {
+                'quiet': True,
+                'skip_download': True,
+                'noplaylist': True,
+                'ignoreerrors': True,
+            }
+            video_info = yt_dlp.YoutubeDL(info_opts).extract_info(url, download=False)
+            if isinstance(video_info, dict):
+                video_title = video_info.get('title', 'Unknown Title')
+        except Exception:
+            pass
+
         try:
             # Set yt-dlp options for downloading video
             ydl_opts = {
@@ -46,15 +98,16 @@ for list in playlists:
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
+                'quiet': True,
+                'noplaylist': True,
+                'ignoreerrors': True,
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
         except Exception as e:
-            video_info = yt_dlp.YoutubeDL().extract_info(url, download=False)
-            video_title = video_info.get('title', 'Unknown Title')
-            writeErrorsToFile(dirLocation, f"Error: {url} {video_title}")
+            writeErrorsToFile(dirLocation, f"Error: {url} {video_title} :: {type(e).__name__}: {e}")
             continue
 
     # Convert any remaining MP4 files in the folder to MP3

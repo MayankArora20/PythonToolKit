@@ -11,7 +11,7 @@ def writeErrorsToFile(location, errorMessage) :
     f.close()
 
 playlists = [
-   "https://www.youtube.com/playlist?list=PLxPkKPLAAOxlTdF2XOJWhnnBI53ear3CN"
+   "https://youtube.com/playlist?list=PLxPkKPLAAOxln5v_Y91GIhD0GOJJeUVEq&si=q_hpijCrQPmWfhlQ"
 #    "https://www.youtube.com/playlist?list=PLxPkKPLAAOxlgT_R64kvtDbqETYlsiJ0d",
 #    "https://www.youtube.com/playlist?list=PLxPkKPLAAOxm2Uli5PWBOZ4Z-dIXEY4cU",
 #    "https://www.youtube.com/playlist?list=PLxPkKPLAAOxm_VTxT2x3kXAI0rX5xjw30",
